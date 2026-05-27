@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d0d0d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gestor Ferro">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<title>Gestor de Ferro - Rogério</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">⚙️</div>
+  <div>
+    <div class="header-title">GESTOR DE FERRO</div>
+    <div class="header-sub">Sistema do Rogério</div>
+  </div>
+  <div id="install-btn-wrap" style="margin-left:auto;display:none">
+    <button class="btn-install" id="install-btn" onclick="installPWA()">📲 Instalar</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showPage('dashboard')">
+    <span class="tab-icon">💰</span>CAIXA
+  </div>
+  <div class="tab" onclick="showPage('orcamento')">
+    <span class="tab-icon">🛠️</span>ORÇAR
+  </div>
+  <div class="tab" onclick="showPage('caixa')">
+    <span class="tab-icon">📊</span>LANÇAR
+  </div>
+  <div class="tab" onclick="showPage('cobranca')">
+    <span class="tab-icon">📞</span>COBRAR
+  </div>
+  <div class="tab" onclick="showPage('relatorio')">
+    <span class="tab-icon">📈</span>MARGEM
+  </div>
+</div>
+
+<!-- PAGE 1: DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div id="alert-container"></div>
+
+  <div class="card">
+    <div class="money-label">💵 Saldo Disponível</div>
+    <div class="money-big" id="saldo-display">R$ 0,00</div>
+    <div class="spark-line"></div>
+    <div id="saldo-status"></div>
+  </div>
+
+  <div id="obra-ativa-section" style="display:none">
+    <div class="card card-highlight">
+      <div class="card-title">🔥 Obra em Andamento</div>
+      <div id="obra-nome" class="obra-badge">—</div>
+      <div class="two-col" style="margin-top:8px">
+        <div>
+          <div class="money-label">Teto Diário Permitido</div>
+          <div class="money-med yellow" id="teto-display">R$ 0</div>
+        </div>
+        <div>
+          <div class="money-label">Sinal Recebido</div>
+          <div class="money-med green" id="sinal-recebido-display">R$ 0</div>
+        </div>
+      </div>
+      <div class="gauge-bar" style="margin-top:10px">
+        <div class="gauge-fill" id="limite-gauge" style="width:0%;background:var(--green)"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px" id="limite-texto">Você não gastou nada pessoal hoje.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Últimas Movimentações</div>
+    <div id="ultimas-tx" class="tx-list">
+      <div class="empty-state"><div class="empty-icon">🔩</div>Nenhuma movimentação ainda</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2: ORÇAMENTO -->
+<div id="page-orcamento" class="page">
+  <div class="card">
+    <div class="card-title">🛠️ Novo Orçamento</div>
+    <div class="input-group">
+      <label class="input-label">👤 Nome do Cliente</label>
+      <input type="text" id="orc-cliente" placeholder="Ex: Seu João da Padaria">
+    </div>
+    <div class="input-group">
+      <label class="input-label">📝 O que vai fazer</label>
+      <input type="text" id="orc-servico" placeholder="Ex: Grade de janela 1,20x0,80m">
+    </div>
+    <div class="input-group">
+      <label class="input-label">💰 Valor Total (R$)</label>
+      <input type="number" id="orc-valor" placeholder="0" oninput="calcularSplit()">
+    </div>
+    <div class="input-group">
+      <label class="input-label">📅 Prazo (dias)</label>
+      <input type="number" id="orc-prazo" placeholder="Ex: 3" oninput="calcularSplit()">
+    </div>
+
+    <div class="split-preview">
+      <div class="split-box sinal">
+        <div class="split-box-label">💰 Sinal Agora</div>
+        <div class="split-box-value yellow" id="split-sinal">R$ 0</div>
+        <div class="split-hint">50% pra começar</div>
+      </div>
+      <div class="split-box entrega">
+        <div class="split-box-label">🔒 Na Entrega</div>
+        <div class="split-box-value green" id="split-entrega">R$ 0</div>
+        <div class="split-hint">50% ao final</div>
+      </div>
+    </div>
+
+    <button class="btn btn-whatsapp" onclick="gerarWhatsApp()">📲 GERAR TEXTO PRO WHATSAPP</button>
+    <button class="btn btn-primary" onclick="salvarObra()">✅ SALVAR OBRA NO SISTEMA</button>
+  </div>
+
+  <div id="whatsapp-preview" style="display:none" class="card">
+    <div class="card-title">📱 Texto Gerado</div>
+    <div id="whatsapp-text" class="whatsapp-box"></div>
+    <button class="btn btn-whatsapp" style="margin-top:12px" onclick="copiarTexto()">📋 COPIAR TEXTO</button>
+  </div>
+</div>
+
+<!-- PAGE 3: LANÇAR -->
+<div id="page-caixa" class="page">
+  <div class="card">
+    <div class="card-title">💵 Entrou Dinheiro</div>
+    <div class="input-group">
+      <label class="input-label">Valor (R$)</label>
+      <input type="number" id="entrada-valor" placeholder="0">
+    </div>
+    <div class="input-group">
+      <label class="input-label">Tipo</label>
+      <select id="entrada-tipo">
+        <option value="sinal">💰 Sinal de Obra</option>
+        <option value="saldo_final">✅ Saldo Final de Obra</option>
+        <option value="outro">📦 Outro (serviço avulso)</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label class="input-label">Descrição (opcional)</label>
+      <input type="text" id="entrada-desc" placeholder="Ex: Sinal da grade do João">
+    </div>
+    <button class="btn btn-green" onclick="lancarMovimentacao('entrada')">➕ REGISTRAR ENTRADA</button>
+  </div>
+
+  <hr class="divider">
+
+  <div class="card">
+    <div class="card-title">🛒 Gastei Dinheiro</div>
+    <div class="input-group">
+      <label class="input-label">Valor (R$)</label>
+      <input type="number" id="saida-valor" placeholder="0">
+    </div>
+    <div class="input-group">
+      <label class="input-label">Tipo</label>
+      <select id="saida-tipo">
+        <option value="material">🔩 Material da Obra</option>
+        <option value="pessoal">🏠 Gasto Pessoal</option>
+        <option value="ferramenta">🔧 Ferramenta/Equipamento</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label class="input-label">Descrição (opcional)</label>
+      <input type="text" id="saida-desc" placeholder="Ex: Eletrodo, tinta, disco">
+    </div>
+    <button class="btn btn-red" onclick="lancarMovimentacao('saida')">➖ REGISTRAR SAÍDA</button>
+  </div>
+</div>
+
+<!-- PAGE 4: COBRAR -->
+<div id="page-cobranca" class="page">
+  <div class="card">
+    <div class="card-title">📞 Scripts Prontos</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;font-weight:500">
+      Toca no script, copia e cola no WhatsApp. Simples assim.
+    </p>
+
+    <div class="script-btn" onclick="copiarScript('terminar')">
+      <div class="script-title">🔔 "Estou terminando a obra"</div>
+      <div class="script-preview">Avisa o cliente e prepara para o acerto do saldo...</div>
+    </div>
+    <div class="script-btn" onclick="copiarScript('sinal')">
+      <div class="script-title">💰 "Preciso do sinal pra começar"</div>
+      <div class="script-preview">Solicita o pagamento inicial de forma profissional...</div>
+    </div>
+    <div class="script-btn" onclick="copiarScript('atraso')">
+      <div class="script-title">⚠️ "Saldo em aberto" (cobrar sem constranger)</div>
+      <div class="script-preview">Cobra o saldo final de forma firme mas sem briga...</div>
+    </div>
+    <div class="script-btn" onclick="copiarScript('aprovado')">
+      <div class="script-title">✅ "Orçamento aprovado, vou começar"</div>
+      <div class="script-preview">Confirma o serviço e já enquadra as condições...</div>
+    </div>
+    <div class="script-btn" onclick="copiarScript('orcamento_verbal')">
+      <div class="script-title">📋 Pedir aprovação formal do orçamento</div>
+      <div class="script-preview">Garante que o cliente confirmou por escrito antes de começar...</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 5: RELATÓRIO DE MARGEM -->
+<div id="page-relatorio" class="page">
+  <div class="card">
+    <div class="card-title">📈 Relatório de Margem</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;font-weight:500">
+      Aqui você vê o quanto realmente sobrou em cada obra.
+    </p>
+    <div id="relatorio-geral"></div>
+  </div>
+
+  <div id="obras-historico"></div>
+
+  <div class="card" style="margin-top:4px">
+    <div class="card-title" style="color:var(--red)">⚠️ Zona de Risco</div>
+    <div id="risk-section"></div>
+  </div>
+</div>
+
+<!-- MODAL ALERTA GASTO PESSOAL -->
+<div class="modal-overlay" id="modal-alerta">
+  <div class="modal">
+    <div style="text-align:center;font-size:48px;margin-bottom:8px;animation:pulse-yellow 1s infinite">⚠️</div>
+    <div class="modal-title">ROGÉRIO, PARA!</div>
+    <div class="status-bar yellow">
+      <div class="status-icon">🚨</div>
+      <div>
+        <div class="status-text">Você está gastando dinheiro da obra!</div>
+        <div class="status-sub" id="modal-msg">Seu teto diário foi ultrapassado.</div>
+      </div>
+    </div>
+    <p style="font-size:14px;color:var(--muted);text-align:center;margin-bottom:16px;line-height:1.5;font-weight:600">
+      Esse dinheiro é de material e para pagar suas contas depois que receber o saldo final. Não mexa agora.
+    </p>
+    <button class="btn btn-yellow" onclick="fecharModal()">ENTENDIDO. VOU SEGURAR 💪</button>
+  </div>
+</div>
+
+<!-- MODAL ENCERRAR OBRA -->
+<div class="modal-overlay" id="modal-encerrar">
+  <div class="modal">
+    <div style="text-align:center;font-size:40px;margin-bottom:8px">🏁</div>
+    <div class="modal-title">ENCERRAR OBRA?</div>
+    <p style="font-size:14px;color:var(--muted);text-align:center;margin-bottom:16px;line-height:1.5;font-weight:600">
+      Isso vai salvar a obra no histórico com a margem calculada.
+    </p>
+    <button class="btn btn-green" onclick="encerrarObra()">✅ SIM, ENCERRAR E SALVAR</button>
+    <button class="btn btn-ghost" onclick="fecharModalEncerrar()">Cancelar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
