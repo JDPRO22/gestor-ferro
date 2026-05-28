@@ -1,0 +1,24 @@
+{
+  "name": "Gestor de Ferro - Rogério",
+  "short_name": "Gestor Ferro",
+  "description": "Sistema financeiro para serralheiros",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#f97316",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

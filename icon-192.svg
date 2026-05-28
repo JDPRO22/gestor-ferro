@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="32" fill="#0d0d0d"/>
+  <rect x="0" y="180" width="192" height="4" fill="#f97316"/>
+  <text x="96" y="115" font-size="90" text-anchor="middle" dominant-baseline="middle" font-family="serif">⚙️</text>
+  <text x="96" y="162" font-size="18" text-anchor="middle" fill="#f97316" font-family="Arial Black, sans-serif" font-weight="900" letter-spacing="2">FERRO</text>
+</svg>
